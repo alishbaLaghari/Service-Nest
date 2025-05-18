@@ -1,0 +1,843 @@
+{% load static custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ provider.full_name }} - Service Provider Details</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --accent-color: #ff6b6b;
+            --accent-gradient: linear-gradient(135deg, #6a11cb, #2575fc);
+            --dark-color: #2d3436;
+            --light-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --card-radius: 15px;
+            --button-radius: 30px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('{% static "patterns/pattern.svg" %}');
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            padding: 8px 0;
+            transition: var(--transition);
+        }
+        
+        .back-btn:hover {
+            opacity: 0.8;
+            transform: translateX(-5px);
+        }
+        
+        .container {
+            width: 1200px;
+            height: 300px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+        
+        .profile-card {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px var(--shadow-color);
+            overflow: hidden;
+            position: sticky;
+            top: 30px;
+            height: 700px;
+        }
+        
+        .profile-header {
+            height: 150px;
+            background: var(--accent-gradient);
+            position: relative;
+        }
+        
+        .profile-image-container {
+            position: absolute;
+            left: 50%;
+            bottom: -60px;
+            transform: translateX(-50%);
+        }
+        
+        .profile-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+        
+        .profile-details {
+            padding: 70px 20px 30px;
+            text-align: center;
+        }
+        
+        .provider-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        .provider-location {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .provider-rating {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+        }
+        
+        .star {
+            color: #ffc107;
+        }
+        
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+        
+        .stat {
+            padding: 15px 10px;
+        }
+        
+        .stat:first-child {
+            border-right: 1px solid #eee;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .request-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 12px 0;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border-radius: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .request-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: 0.5s;
+        }
+        
+        .request-btn:hover::after {
+            left: 100%;
+        }
+        
+        .request-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .details-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .details-card {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px var(--shadow-color);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .details-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 15px 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-header i {
+            font-size: 1.2rem;
+        }
+        
+        .card-content {
+            padding: 20px;
+        }
+        
+        .service-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .service-tag {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-color);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            transition: var(--transition);
+        }
+        
+        .service-tag:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .detail-item {
+            margin-bottom: 15px;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .detail-label i {
+            color: var(--primary-color);
+        }
+        
+        .detail-value {
+            color: #666;
+            padding-left: 25px;
+        }
+        
+        .feedback-list {
+            margin-top: 20px;
+        }
+        
+        .feedback-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .feedback-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .feedback-name {
+            font-weight: 600;
+        }
+        
+        .feedback-date {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        
+        .feedback-text {
+            color: #555;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(210, 209, 209, 0.7);
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        
+        /* Enhanced form styling to make inputs look cooler */
+        .form-group {
+            margin-bottom: 22px;
+            position: relative;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.25);
+            outline: none;
+            background-color: #fff;
+        }
+        
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group:focus-within label {
+            color: var(--primary-color);
+        }
+        
+        .form-group i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        /* Make select boxes more modern */
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%234a90e2' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px 12px;
+            padding-right: 40px;
+        }
+        
+        /* Animated submit button */
+        .confirm-btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: var(--button-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .confirm-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+        
+        .confirm-btn:hover:before {
+            width: 100%;
+        }
+        
+        /* Textarea enhancement */
+        textarea.form-control {
+            min-height: 100px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+        
+        /* Enhanced modal styling */
+        .modal-content {
+            border-radius: 15px;
+            overflow: hidden;
+            max-width: 600px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .success-message i {
+            font-size: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-card {
+                position: relative;
+                top: 0;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-width: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="{% url 'customer_login_success' username=username %}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Providers
+            </a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-image-container">
+                    <img src="{% if provider.profile_photo %}{{ provider.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" alt="{{ provider.full_name }}" class="profile-image">
+                </div>
+            </div>
+            <div class="profile-details">
+                <h1 class="provider-name">{{ provider.full_name }}</h1>
+                <div class="provider-location">
+                    <i class="fas fa-map-marker-alt"></i> {{ provider.city }}
+                </div>
+                <div class="provider-rating">
+                    <i class="fas fa-star star"></i>
+                    <i class="fas fa-star star"></i>
+                    <i class="fas fa-star star"></i>
+                    <i class="fas fa-star star"></i>
+                    <i class="fas fa-star-half-alt star"></i>
+                    <span style="margin-left: 5px; color: #666;">(4.5)</span>
+                </div>
+                
+                <p>{{ provider.description|truncatechars:150 }}</p>
+                
+                <div class="profile-stats">
+                    <div class="stat">
+                        <div class="stat-value">{{ provider.days_available|length }}</div>
+                        <div class="stat-label">Available Days</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">{{ feedbacks|length }}</div>
+                        <div class="stat-label">Reviews</div>
+                    </div>
+                </div>
+                
+                <form method="POST" action="{% url 'provider_details' pk=provider.pk username=username %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="customer_id" value="{{ customer_details.id }}">
+                    
+                    {% if existing_request %}
+                        <button type="button" class="request-btn" disabled>Request Sent</button>
+                    {% else %}
+                        <button type="button" class="request-btn" onclick="openModal()">
+                            Request Service
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        
+        <!-- Details Section -->
+        <div class="details-section">
+            <!-- Services Offered -->
+            <div class="details-card">
+                <div class="card-header">
+                    <i class="fas fa-briefcase"></i> Services Offered
+                </div>
+                <div class="card-content">
+                    <div class="service-tags">
+                        {% for service in provider.service_types.split %}
+                            <span class="service-tag">{{ service }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="details-card">
+                <div class="card-header">
+                    <i class="fas fa-address-card"></i> Contact Information
+                </div>
+                <div class="card-content">
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-envelope"></i> Email
+                        </div>
+                        <div class="detail-value">{{ provider.email }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-phone"></i> Phone
+                        </div>
+                        <div class="detail-value">{{ provider.phone }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-map-marker-alt"></i> Address
+                        </div>
+                        <div class="detail-value">{{ provider.address }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Availability -->
+            <div class="details-card">
+                <div class="card-header">
+                    <i class="fas fa-calendar-alt"></i> Availability
+                </div>
+                <div class="card-content">
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-clock"></i> Working Hours
+                        </div>
+                        <div class="detail-value">{{ provider.working_hours }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-calendar-day"></i> Days Available
+                        </div>
+                        <div class="detail-value">{{ provider.days_available }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Expertise -->
+            <div class="details-card">
+                <div class="card-header">
+                    <i class="fas fa-medal"></i> Expertise & Experience
+                </div>
+                <div class="card-content">
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-language"></i> Languages
+                        </div>
+                        <div class="detail-value">{{ provider.languages }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-award"></i> Skills & Qualifications
+                        </div>
+                        <div class="detail-value">{{ provider.skills_and_qualifications }}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">
+                            <i class="fas fa-briefcase"></i> Previous Work Experience
+                        </div>
+                        <div class="detail-value">{{ provider.previous_work_experience }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Feedback & Reviews -->
+            <div class="details-card">
+                <div class="card-header">
+                    <i class="fas fa-comments"></i> Customer Reviews
+                </div>
+                <div class="card-content">
+                    {% if feedbacks %}
+                        <div class="feedback-list">
+                            {% for feedback in feedbacks %}
+                                <div class="feedback-item">
+                                    <div class="feedback-header">
+                                        <span class="feedback-name">{{ feedback.customer_details.full_name }}</span>
+                                        <span class="feedback-date">2 days ago</span>
+                                    </div>
+                                    <div class="feedback-text">{{ feedback.feedback }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p>No reviews yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Service Request Form</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="requestSuccessMessage" class="success-message" style="display: none;">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Your service request has been sent successfully!</span>
+                </div>
+                
+                <form id="serviceRequestForm" method="POST" action="{% url 'provider_details' pk=provider.pk username=username %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="customer_id" value="{{ customer_details.id }}">
+                    <input type="hidden" name="confirm_request" value="true">
+                    <input type="hidden" name="provider_id" value="{{ provider.id }}">
+                    
+                    <div class="form-group">
+                        <label for="service_type"><i class="fas fa-briefcase"></i> Service Type</label>
+                        <select id="service_type" name="service_type" class="form-control" required>
+                            <option value="" disabled selected>Select the service you need</option>
+                            {% for service in provider.service_types.split %}
+                                <option value="{{ service|trim }}">{{ service|trim }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preferred_date"><i class="fas fa-calendar-alt"></i> Preferred Date</label>
+                        <input type="date" id="preferred_date" name="preferred_date" class="form-control" required min="{{ today_date|date:'Y-m-d' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="preferred_time"><i class="fas fa-clock"></i> Preferred Time</label>
+                        <select id="preferred_time" name="preferred_time" class="form-control" required>
+                            <option value="" disabled selected>Select your preferred time</option>
+                            <option value="Morning (8:00 AM - 12:00 PM)">Morning (8:00 AM - 12:00 PM)</option>
+                            <option value="Afternoon (12:00 PM - 4:00 PM)">Afternoon (12:00 PM - 4:00 PM)</option>
+                            <option value="Evening (4:00 PM - 8:00 PM)">Evening (4:00 PM - 8:00 PM)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service_location"><i class="fas fa-map-marker-alt"></i> Service Location</label>
+                        <select id="service_location" name="service_location" class="form-control" required>
+                            <option value="My Location" selected>My location ({{ customer_details.city }})</option>
+                            <option value="Provider Location">Provider's location</option>
+                            <option value="Other">Other location (specify in description)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service_description"><i class="fas fa-info-circle"></i> Service Description</label>
+                        <textarea id="service_description" name="service_description" class="form-control" rows="4" placeholder="Please describe what you need help with in detail..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="additional_requirements"><i class="fas fa-clipboard-list"></i> Additional Requirements</label>
+                        <textarea id="additional_requirements" name="additional_requirements" class="form-control" rows="3" placeholder="Any special requirements or tools needed..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="serviceRequestForm" class="confirm-btn">
+                    <i class="fas fa-paper-plane"></i> Submit Request
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal functionality
+        function openModal() {
+            document.getElementById('confirmationModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+        
+        function closeModal() {
+            document.getElementById('confirmationModal').style.display = 'none';
+            document.getElementById('serviceRequestForm').reset();
+            document.getElementById('requestSuccessMessage').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        }
+        
+        // Form submission handling to ensure data is saved
+        document.getElementById('serviceRequestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!this.checkValidity()) {
+                this.reportValidity();
+                return;
+            }
+            
+            // Prepare submit button with loading state
+            const submitBtn = document.querySelector('.confirm-btn');
+            const originalButtonContent = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
+            // Submit form - ensuring all data is captured
+            this.submit();
+            
+            // Show success message
+            document.getElementById('requestSuccessMessage').style.display = 'flex';
+            
+            // After timeout, reset button and close modal
+            setTimeout(() => {
+                submitBtn.innerHTML = originalButtonContent;
+                submitBtn.disabled = false;
+                
+                const requestBtn = document.querySelector('.request-btn');
+                requestBtn.disabled = true;
+                requestBtn.textContent = 'Request Sent';
+                
+                // Don't close modal yet - wait for user to see success message
+                setTimeout(() => {
+                    closeModal();
+                }, 1500);
+            }, 1000);
+        });
+        
+        // Service tags parsing
+        document.addEventListener('DOMContentLoaded', function() {
+            const serviceTagContainers = document.querySelectorAll('.service-tags');
+            
+            serviceTagContainers.forEach(container => {
+                const serviceText = container.textContent.trim();
+                container.innerHTML = '';
+                
+                if (serviceText) {
+                    const services = serviceText.split(',');
+                    services.forEach(service => {
+                        if (service.trim()) {
+                            const span = document.createElement('span');
+                            span.className = 'service-tag';
+                            span.textContent = service.trim();
+                            container.appendChild(span);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,639 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ customer_details.full_name }} | ServiceNest Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --primary-light: rgba(76, 175, 80, 0.1);
+            --accent: #00bcd4;
+            --accent-dark: #0097a7;
+            --danger: #e74c3c;
+            --dark: #333;
+            --text: #555;
+            --text-light: #999;
+            --white: #fff;
+            --gray: #f9f9f9;
+            --gray-light: #f5f5f5;
+            --gray-dark: #e0e0e0;
+            --shadow-sm: 0 5px 10px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 30px rgba(0,0,0,0.1);
+            --shadow-lg: 0 15px 50px rgba(0,0,0,0.12);
+            --shadow-hover: 0 15px 60px rgba(0,0,0,0.2);
+            --gradient-primary: linear-gradient(135deg, #4CAF50, #8BC34A);
+            --gradient-accent: linear-gradient(135deg, #00bcd4, #42A5F5);
+            --gradient-page: linear-gradient(135deg, #f6f9fc, #eef2f7);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 24px;
+            --radius-xl: 32px;
+            --radius-full: 9999px;
+            --transition-fast: all 0.2s ease;
+            --transition-normal: all 0.3s ease;
+            --transition-slow: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: var(--gradient-page);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Animated background elements */
+        .bg-shapes span {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(76, 175, 80, 0.03);
+            backdrop-filter: blur(10px);
+            z-index: -1;
+        }
+        
+        .bg-shapes span:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            left: 10%;
+            animation: float 15s infinite alternate;
+        }
+        
+        .bg-shapes span:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            bottom: 5%;
+            right: 5%;
+            animation: float 20s infinite alternate-reverse;
+            background: rgba(0, 188, 212, 0.03);
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(30px, -30px) rotate(10deg); }
+        }
+        
+        .profile-container {
+            width: 100%;
+            max-width: 1000px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition-normal);
+            animation: fadeIn 0.8s ease forwards;
+            position: relative;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .profile-container:hover {
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .profile-header {
+            position: relative;
+            height: 200px;
+            background: var(--gradient-primary);
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .avatar-container {
+            position: absolute;
+            bottom: -70px;
+            transform: translateX(-50%);
+            left: 50%;
+            z-index: 2;
+        }
+        
+        .avatar-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            padding: 5px;
+            background: var(--white);
+            box-shadow: var(--shadow-md);
+            animation: pulseGlow 2s infinite alternate;
+        }
+        
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 5px 20px rgba(76, 175, 80, 0.4); }
+            100% { box-shadow: 0 5px 30px rgba(76, 175, 80, 0.7); }
+        }
+        
+        .profile-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+        
+        .avatar-edit {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-accent);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 188, 212, 0.3);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            z-index: 3;
+        }
+        
+        .avatar-edit:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        
+        .avatar-edit input {
+            display: none;
+        }
+        
+        .avatar-edit i {
+            font-size: 18px;
+        }
+        
+        .profile-body {
+            padding: 90px 40px 40px;
+        }
+        
+        .profile-name {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .profile-name h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+        
+        .profile-role {
+            color: var(--accent);
+            font-size: 16px;
+            font-weight: 500;
+            display: inline-block;
+            padding: 5px 15px;
+            background: rgba(0, 188, 212, 0.1);
+            border-radius: var(--radius-full);
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-full);
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary-light);
+            transform: translateY(-3px);
+        }
+        
+        .profile-form {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition-normal);
+        }
+        
+        .profile-form:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-dark);
+        }
+        
+        .section-title i {
+            color: var(--primary);
+            font-size: 20px;
+        }
+        
+        .section-title h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--dark);
+            font-size: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: var(--gray-light);
+            border: 1px solid var(--gray-dark);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            color: var(--text);
+            transition: var(--transition-normal);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--white);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .submit-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gradient-primary);
+            color: var(--white);
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: var(--transition-normal);
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(1px);
+        }
+        
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+        }
+        
+        .help-text {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+        
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--radius-full);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition-normal);
+            z-index: 10;
+            text-decoration: none;
+        }
+        
+        .logout-button:hover {
+            background: var(--danger);
+            color: var(--white);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .lightbox.active {
+            opacity: 1;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 80%;
+            max-height: 80%;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        
+        .lightbox.active .lightbox-content {
+            transform: scale(1);
+        }
+        
+        .lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-normal);
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .profile-body {
+                padding: 90px 20px 30px;
+            }
+            
+            .profile-form {
+                padding: 30px 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-footer {
+                flex-direction: column;
+                gap: 20px;
+                align-items: flex-start;
+            }
+            
+            .submit-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background shapes -->
+    <div class="bg-shapes">
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="profile-container">
+        <!-- Header with profile photo -->
+        <div class="profile-header">
+            <a href="{% url 'home' %}" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+            
+            <div class="avatar-container">
+                <div class="avatar-wrapper">
+                    {% if customer_details.profile_photo %}
+                    <img class="profile-avatar" src="{{ customer_details.profile_photo.url }}" alt="{{ customer_details.full_name }}" onclick="openLightbox('{{ customer_details.profile_photo.url }}')">
+                    {% else %}
+                    <img class="profile-avatar" src="{% static 'default.png' %}" alt="Default Profile" onclick="openLightbox('{% static 'default.png' %}')">
+                    {% endif %}
+                    
+                    <label class="avatar-edit" for="id_profile_photo">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" id="id_profile_photo" name="profile_photo" accept="image/*" form="profileForm" onchange="previewImage(event)">
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="profile-body">
+            <!-- Profile name and actions -->
+            <div class="profile-name">
+                <h1>{{ customer_details.full_name }}</h1>
+                <span class="profile-role">Customer</span>
+            </div>
+         
+            
+            <!-- Profile form -->
+            <form id="profileForm" class="profile-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-user-circle"></i>
+                        <h2>Personal Information</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="full_name">Full Name</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ customer_details.full_name }}" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="age">Age</label>
+                            <input type="number" class="form-control" id="age" name="age" value="{{ customer_details.age }}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="city">City</label>
+                            <select class="form-control" id="city" name="city" required>
+                                <option value="">Select City</option>
+                                <option value="Karachi" {% if customer_details.city == 'Karachi' %}selected{% endif %}>Karachi</option>
+                                <option value="Lahore" {% if customer_details.city == 'Lahore' %}selected{% endif %}>Lahore</option>
+                                <option value="Islamabad" {% if customer_details.city == 'Islamabad' %}selected{% endif %}>Islamabad</option>
+                                <option value="Hyderabad" {% if customer_details.city == 'Hyderabad' %}selected{% endif %}>Hyderabad</option>
+                                <option value="Jamshoro" {% if customer_details.city == 'Jamshoro' %}selected{% endif %}>Jamshoro</option>
+                                <option value="Sialkot" {% if customer_details.city == 'Sialkot' %}selected{% endif %}>Sialkot</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ customer_details.email }}" required>
+                    </div>
+                </div>
+                
+                <div class="form-footer">
+                    <p class="help-text">Last updated: <strong>{% now "F j, Y" %}</strong></p>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lightbox for viewing the image -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox(); event.stopPropagation();">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="lightbox-img" class="lightbox-img" src="" alt="Profile Photo">
+        </div>
+    </div>
+
+    <script>
+        // Preview profile photo when selected
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.querySelector('.profile-avatar').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Lightbox functionality with animation
+        function openLightbox(src) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            
+            lightboxImg.src = src;
+            lightbox.style.display = 'flex';
+            
+            // Trigger reflow before adding active class for animation
+            void lightbox.offsetWidth;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            
+            // Wait for transition to complete before hiding element
+            setTimeout(() => {
+                lightbox.style.display = 'none';
+            }, 300);
+        }
+
+        // Form validation
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            const fullName = document.getElementById('full_name').value;
+            const age = document.getElementById('age').value;
+            const city = document.getElementById('city').value;
+            
+            if (!fullName || !age || !city) {
+                e.preventDefault();
+                alert('Please fill all required fields');
+            }
+        });
+    </script>
+</body>
+</html>

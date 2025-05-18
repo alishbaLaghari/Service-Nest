@@ -1,0 +1,1542 @@
+login_success.html
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceNest - Find Service Providers</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --accent-color: #ff6b6b;
+            --success-color: #2ecc71;
+            --dark-color: #2d3436;
+            --light-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --gradient-start: #4a90e2;
+            --gradient-end: #357abd;
+            --gradient-accent: linear-gradient(135deg, #6a11cb, #2575fc);
+            --gradient-accent-alt: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            --card-radius: 15px;
+            --button-radius: 30px;
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Glassmorphism Elements */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+
+        /* Header and Navigation */
+        .header {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: var(--light-color);
+            padding: 1rem;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Profile Menu */
+        .profile-container {
+            position: relative;
+        }
+
+        .profile-photo {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: var(--transition);
+            object-fit: cover;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-photo:hover {
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .profile-menu {
+            position: absolute;
+            right: 0;
+            top: 55px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 280px;
+            padding: 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            overflow: hidden;
+            z-index: 1001;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .profile-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .profile-header {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 60%);
+            opacity: 0.6;
+            animation: rotate 15s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin-bottom: 15px;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.5s;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .profile-name {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-location {
+            font-size: 0.9em;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .profile-location i {
+            font-size: 0.9em;
+        }
+
+        .menu-items {
+            padding: 10px 0;
+            background: linear-gradient(to bottom, #ffffff, #f9f9f9);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: 0.3s;
+            border-left: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item:hover {
+            background: rgba(74, 144, 226, 0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .menu-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(0,0,0,0.05), transparent);
+        }
+
+        .menu-item i {
+            margin-right: 12px;
+            color: var(--primary-color);
+            width: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            transition: transform 0.3s;
+        }
+        
+        .menu-item:hover i {
+            transform: scale(1.2);
+        }
+
+        /* Main Content */
+        .main-container {
+            max-width: 1400px;
+            margin: 90px auto 0;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section {
+            background: white;
+            border-radius: var(--card-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px var(--shadow-color);
+            transition: transform 0.4s, box-shadow 0.4s;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient-accent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .section:hover::before {
+            opacity: 1;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: var(--gradient-accent);
+            border-radius: 10px;
+        }
+
+        .section-title i {
+            background: var(--gradient-accent);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            box-shadow: 0 4px 10px rgba(106, 17, 203, 0.3);
+            position: relative;
+        }
+        
+        .section-title i::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            animation: pulse-border 2s infinite;
+        }
+        
+        @keyframes pulse-border {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Filters Section */
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .filter-label i {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        .filter-dropdown {
+            padding: 14px;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            background: white;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            font-size: 0.95rem;
+        }
+
+        .filter-dropdown:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        .filter-button {
+            background: var(--gradient-accent);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: var(--button-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.4s;
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .filter-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2);
+            transition: 0.6s;
+            transform: skewX(-15deg);
+        }
+        
+        .filter-button:hover::before {
+            left: 100%;
+        }
+
+        .filter-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        .filter-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(106, 17, 203, 0.4);
+        }
+
+        /* Select2 Customization */
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 10px;
+            min-height: 48px;
+            padding: 5px;
+        }
+        
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+        }
+        
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: rgba(255,255,255,0.8);
+            margin-right: 5px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+        }
+
+        /* Map Section with enhanced styling */
+        .map-section {
+            height: 300px;
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .map-container {
+            height: 100%;
+            width: 100%;
+            border-radius: var(--card-radius);
+            z-index: 5;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.92);
+            padding: 12px 18px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+            z-index: 400;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.4);
+            transform: translateY(0);
+            transition: transform 0.3s;
+        }
+        
+        .map-overlay:hover {
+            transform: translateY(-3px);
+        }
+
+        .map-title {
+            margin: 0;
+            font-size: 1em;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .map-title i {
+            color: var(--primary-color);
+        }
+
+        /* Enhanced Provider Cards */
+        .providers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .provider-card {
+            background: white;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.04);
+            transform: translateY(0);
+        }
+
+        .provider-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary-color);
+        }
+        
+        .provider-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05));
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        
+        .provider-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-top {
+            display: flex;
+            padding: 22px;
+            align-items: center;
+            gap: 18px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-top::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(74, 144, 226, 0.2), transparent);
+            transform: scaleX(0);
+            transition: transform 0.6s;
+        }
+        
+        .provider-card:hover .card-top::after {
+            transform: scaleX(1);
+        }
+
+        .card-avatar {
+            width: 75px;
+            height: 75px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
+            background: var(--gradient-accent);
+            padding: 3px;
+            position: relative;
+            transition: transform 0.5s, box-shadow 0.5s;
+        }
+        
+        .provider-card:hover .card-avatar {
+            transform: scale(1.05) rotate(3deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.7s;
+        }
+        
+        .provider-card:hover .card-avatar img {
+            transform: scale(1.15);
+        }
+
+        .card-info {
+            flex: 1;
+        }
+
+        .provider-name {
+            font-size: 1.25em;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .verified-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+        
+        .provider-card:hover .verified-badge {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 10px rgba(74, 144, 226, 0.3);
+        }
+
+        .verified-badge i {
+            font-size: 0.9rem;
+        }
+
+        .provider-location {
+            color: #666;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .provider-location i {
+            color: var(--primary-color);
+            font-size: 1em;
+        }
+
+        .card-body {
+            padding: 18px 22px;
+            position: relative;
+        }
+
+        .provider-services {
+            margin-bottom: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .service-tag {
+            background: rgba(74, 144, 226, 0.08);
+            color: var(--primary-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75em;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            transition: all 0.4s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid rgba(74, 144, 226, 0.12);
+        }
+        
+        .provider-card:hover .service-tag {
+            background: rgba(74, 144, 226, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+        }
+        
+        .service-tag:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-4px) !important;
+            box-shadow: 0 5px 12px rgba(74, 144, 226, 0.3) !important;
+        }
+
+        .provider-preview {
+            color: #666;
+            font-size: 0.95em;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 18px;
+            line-height: 1.6;
+        }
+
+        .card-footer {
+            display: flex;
+            padding: 16px 22px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(245, 246, 250, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card-footer::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-accent);
+            transition: width 0.4s ease;
+        }
+        
+        .provider-card:hover .card-footer::before {
+            width: 100%;
+        }
+
+        .availability {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #555;
+            font-size: 0.85em;
+        }
+
+        .availability i {
+            color: var(--success-color);
+            font-size: 1.1em;
+        }
+
+        .view-details-btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 1.5px solid var(--primary-color);
+            padding: 9px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: all 0.4s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .view-details-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.4s ease;
+            z-index: -1;
+        }
+        
+        .provider-card:hover .view-details-btn::before {
+            width: 100%;
+        }
+        
+        .provider-card:hover .view-details-btn {
+            color: white;
+            box-shadow: 0 6px 15px rgba(74, 144, 226, 0.3);
+            transform: translateY(-3px);
+        }
+
+        /* Back To Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-accent);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            z-index: 999;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(106, 17, 203, 0.4);
+        }
+
+        /* Pending requests button */
+        .pending-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: var(--gradient-accent-alt);
+            color: white;
+            border-radius: 30px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+            z-index: 999;
+        }
+        
+        .pending-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+        }
+        
+        .pending-btn .badge {
+            background: white;
+            color: var(--accent-color);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Enhanced Footer */
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .footer-waves {
+            position: absolute;
+            top: -5px;
+            left: 0;
+            width: 100%;
+            height: 70px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%232c3e50' d='M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        
+        .footer-content {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 1.2rem;
+            font-size: 1.3rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60%;
+            height: 3px;
+            background: var(--gradient-accent);
+            border-radius: 10px;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section li {
+            margin-bottom: 0.8rem;
+            transition: transform 0.3s;
+        }
+        
+        .footer-section li:hover {
+            transform: translateX(5px);
+        }
+        
+        .footer-section a {
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: color 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .footer-section a::before {
+            content: '→';
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            transform: translateX(-10px);
+        }
+        
+        .footer-section a:hover::before {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .footer-section a:hover {
+            color: #3498db;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2.5rem;
+            margin-top: 2rem;
+            border-top: 1px solid #34495e;
+            font-size: 0.95rem;
+            color: #bdc3c7;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .social-icons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-icons a {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .social-icons a:hover {
+            background: var(--primary-color);
+            transform: translateY(-5px);
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        /* Visual enhancements with more dynamic bubbles */
+        .accent-bubble {
+            position: fixed;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(106, 17, 203, 0.04), rgba(37, 117, 252, 0.06));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.8;
+        }
+        
+        .bubble-1 {
+            top: 10%;
+            left: 5%;
+            width: 350px;
+            height: 350px;
+            animation: float1 20s infinite ease-in-out;
+        }
+        
+        .bubble-2 {
+            bottom: 10%;
+            right: 10%;
+            width: 300px;
+            height: 300px;
+            animation: float2 15s infinite ease-in-out;
+        }
+        
+        .bubble-3 {
+            top: 50%;
+            right: 20%;
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.04), rgba(255, 142, 142, 0.06));
+            animation: float3 18s infinite ease-in-out;
+        }
+        
+        .bubble-4 {
+            bottom: 40%;
+            left: 25%;
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(46, 204, 113, 0.03), rgba(52, 152, 219, 0.05));
+            animation: float4 25s infinite ease-in-out;
+        }
+        
+        @keyframes float1 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, 40px) rotate(5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        @keyframes float2 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(-20px, 30px) rotate(-8deg); }
+            66% { transform: translate(20px, -20px) rotate(8deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        @keyframes float3 {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-25px, 15px) scale(1.1); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+        
+        @keyframes float4 {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            33% { transform: translate(15px, -15px) scale(1.05) rotate(-3deg); }
+            66% { transform: translate(-15px, 20px) scale(0.95) rotate(3deg); }
+            100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 992px) {
+            .main-container {
+                margin: 80px auto 0;
+            }
+            
+            .providers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section {
+                padding: 20px;
+            }
+            
+            .map-section {
+                height: 250px;
+            }
+            
+            .filter-button {
+                padding: 12px 18px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .providers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-dropdown {
+                padding: 12px;
+            }
+            
+            .back-to-top,
+            .pending-btn {
+                transform: scale(0.9);
+                right: 20px;
+                bottom: 20px;
+            }
+            
+            .pending-btn {
+                left: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Visual enhancements with more bubbles -->
+    <div class="accent-bubble bubble-1"></div>
+    <div class="accent-bubble bubble-2"></div>
+    <div class="accent-bubble bubble-3"></div>
+    <div class="accent-bubble bubble-4"></div>
+
+    <!-- Header/Navigation -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-tools"></i> ServiceNest
+        </div>
+        <div class="profile-container">
+            <img src="{% if customer_details.profile_photo %}{{ customer_details.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" alt="Profile" class="profile-photo" id="profilePhoto">
+            <div class="profile-menu" id="profileMenu">
+                <div class="profile-header">
+                    <img src="{% if customer_details.profile_photo %}{{ customer_details.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" alt="Profile" class="profile-avatar">
+                    <div class="profile-name">{{ customer_details.full_name }}</div>
+                    <div class="profile-location">
+                        <i class="fas fa-map-marker-alt"></i> {{ customer_details.city }}
+                    </div>
+                </div>
+                <div class="menu-items">
+                    <a href="{% url 'customer_profile' username=username %}" class="menu-item">
+                        <i class="fas fa-user"></i> My Profile
+                    </a>
+                    <a href="{% url 'pending' pk=customer_details.pk %}" class="menu-item">
+                        <i class="fas fa-clock"></i> Pending Requests
+                    </a>
+                    <a href="#" class="menu-item">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                    <a href="{% url 'customer_login' %}" class="menu-item">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome banner - New! -->
+        <section class="section" data-aos="fade-up" data-aos-duration="800">
+            <div class="section-title">
+                <i class="fas fa-home"></i>
+                <h2>Welcome, {{ customer_details.full_name }}!</h2>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 250px;">
+                    <h3 style="margin-bottom: 10px; color: var(--primary-color);">Find the perfect service provider</h3>
+                    <p style="margin-bottom: 15px; line-height: 1.7;">
+                        Browse through our network of qualified professionals to find the services you need. 
+                        Filter by location and service category to find the perfect match.
+                    </p>
+                </div>
+                <div style="flex: 1; text-align: center; min-width: 200px;">
+                    <div style="padding: 15px; background: rgba(74, 144, 226, 0.08); border-radius: 10px; display: inline-block;">
+                        <i class="fas fa-search" style="font-size: 3rem; color: var(--primary-color);"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters Section -->
+        <section class="section" data-aos="fade-up" data-aos-duration="800" data-aos-delay="100">
+            <div class="section-title">
+                <i class="fas fa-filter"></i>
+                <h2>Find Service Providers</h2>
+            </div>
+            
+            <form method="GET" action="{% url 'customer_login_success' username=username %}">
+                <div class="filters-container">
+                    <div class="filter-group">
+                        <label class="filter-label" for="locationFilter">
+                            <i class="fas fa-map-marker-alt"></i> Location
+                        </label>
+                        <select id="locationFilter" name="location" class="filter-dropdown">
+                            <option value="">All Locations</option>
+                            {% for city in locations %}
+                                <option value="{{ city }}" {% if city == request.GET.location or city == customer_city and not request.GET.location %}selected{% endif %}>{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label" for="categoryFilter">
+                            <i class="fas fa-tags"></i> Service Categories
+                        </label>
+                        <select id="categoryFilter" name="categories" class="filter-dropdown" multiple>
+                            {% for category in categories %}
+                                <option value="{{ category }}" {% if category in request.GET.categories %}selected{% endif %}>{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <button type="submit" class="filter-button">
+                            <i class="fas fa-search"></i> Find Services
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Map Section - Smaller height -->
+        <section class="section" data-aos="fade-up" data-aos-duration="800" data-aos-delay="200">
+            <div class="section-title">
+                <i class="fas fa-map-marked-alt"></i>
+                <h2>Service Providers Map</h2>
+            </div>
+            
+            <div class="map-section">
+                <div id="providersMap" class="map-container"></div>
+                <div class="map-overlay">
+                    <h3 class="map-title">
+                        <i class="fas fa-map-pin"></i> 
+                        Service Provider Locations
+                    </h3>
+                </div>
+            </div>
+        </section>
+
+        <!-- Service Providers Section with Enhanced Cards -->
+        <section class="section" data-aos="fade-up" data-aos-duration="800" data-aos-delay="300">
+            <div class="section-title">
+                <i class="fas fa-hands-helping"></i>
+                <h2>Available Service Providers</h2>
+            </div>
+            
+            <div class="providers-grid">
+                {% for provider in service_providers %}
+                <div class="provider-card" data-aos="zoom-in" data-aos-duration="600" data-aos-delay="{{ forloop.counter|add:3 }}00">
+                    <div class="card-top">
+                        <div class="card-avatar">
+                            <img src="{% if provider.profile_photo %}{{ provider.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" alt="{{ provider.full_name }}">
+                        </div>
+                        <div class="card-info">
+                            <h3 class="provider-name">
+                                {{ provider.full_name }}
+                                <span class="verified-badge">
+                                    <i class="fas fa-shield-alt"></i> Verified
+                                </span>
+                            </h3>
+                            <div class="provider-location">
+                                <i class="fas fa-map-marker-alt"></i> {{ provider.city }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="provider-services">
+                            {% for service in provider.service_types.split %}
+                                <span class="service-tag">{{ service }}</span>
+                            {% endfor %}
+                        </div>
+                        <p class="provider-preview">
+                            {% if provider.description %}
+                                {{ provider.description|truncatechars:120 }}
+                            {% else %}
+                                Professional service provider offering quality services in {{ provider.city }}.
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="availability">
+                            <i class="fas fa-clock"></i>
+                            <span>{{ provider.working_hours|default:"Available" }}</span>
+                        </div>
+                        <a href="{% url 'provider_details' pk=provider.pk username=username %}" class="view-details-btn">
+                            <i class="fas fa-info-circle"></i> View Profile
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <a href="{% url 'pending' pk=customer_details.pk %}" class="pending-btn">
+        <i class="fas fa-list-ul"></i>
+        <span class="badge">{{ pending_count|default:'0' }}</span>
+    </a>
+    
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Enhanced Footer with Waves -->
+    <footer>
+        <div class="footer-waves"></div>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Company</h3>
+                <ul>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="careers.html">Careers</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="help.html">Help Center</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="tickets.html">Submit a Ticket</a></li>
+                    <li><a href="community.html">Community</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="cookies.html">Cookie Policy</a></li>
+                    <li><a href="gdpr.html">GDPR</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <p style="margin-top: 1.2rem; line-height: 1.8;">
+                    <i class="fas fa-envelope"></i> support@servicenest.com<br>
+                    <i class="fas fa-phone-alt"></i> +1 (555) 123-4567
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 ServiceNest. All rights reserved.</p>
+        </div>
+    </footer> 
+
+    <!-- Add the chat toggle button -->
+    <div class="chat-toggle" id="chatToggle" onclick="openChat()">
+        <i class="fas fa-comments"></i>
+        <span class="badge" id="chatUnreadBadge" style="display: none;">0</span>
+    </div>
+
+    <!-- Chat container will be loaded here -->
+    <div id="chatContainerWrapper"></div>
+
+    <script>
+        // Initialize AOS animations
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({
+                once: true,
+                offset: 100
+            });
+        });
+    
+        // Profile Menu Toggle
+        const profilePhoto = document.getElementById('profilePhoto');
+        const profileMenu = document.getElementById('profileMenu');
+        
+        profilePhoto.addEventListener('click', () => {
+            profileMenu.classList.toggle('active');
+        });
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!profilePhoto.contains(event.target) && !profileMenu.contains(event.target)) {
+                profileMenu.classList.remove('active');
+            }
+        });
+        
+        // Back to Top Button functionality
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Select2 Initialization with custom styling
+        $(document).ready(function() {
+            $('#categoryFilter').select2({
+                placeholder: "Select service categories",
+                allowClear: true,
+                theme: "classic"
+            });
+        });
+        
+        // Map Initialization with enhanced styling
+        const providersMap = L.map('providersMap').setView([30.3753, 69.3451], 5); // Default view centered on Pakistan
+        
+        // Custom map style with more detailed tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(providersMap);
+        
+        // Debug output - check if we have providers
+        console.log("Total service providers:", {{ service_providers|length }});
+        
+        // Array to collect all markers for map bounds
+        const allMarkers = [];
+        
+        // Add markers for all service providers
+        {% for provider in service_providers %}
+            (function() {
+                // Debug each provider
+                console.log("Processing provider:", "{{ provider.full_name }}", 
+                            "Lat:", "{{ provider.latitude }}", 
+                            "Lng:", "{{ provider.longitude }}");
+                
+                // Check if we have coordinates
+                {% if provider.latitude and provider.longitude %}
+                    // Parse coordinates as floats
+                    const lat = parseFloat("{{ provider.latitude }}");
+                    const lng = parseFloat("{{ provider.longitude }}");
+                    
+                    // Make sure coordinates are valid numbers
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        console.log("Creating marker at:", lat, lng);
+                        
+                        // Create a very visible marker
+                        const redIcon = L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41],
+                            popupAnchor: [1, -34],
+                            shadowSize: [41, 41]
+                        });
+                        
+                        // Create the marker
+                        const marker = L.marker([lat, lng], {
+                            icon: redIcon,
+                            title: "{{ provider.full_name }} - {{ provider.city }}"
+                        }).addTo(providersMap);
+                        
+                        // Save to markers array for bounds
+                        allMarkers.push(marker);
+                        
+                        // Create popup content
+                        const popupContent = `
+                            <div style="width: 220px; text-align: center; padding: 10px;">
+                                <img src="{% if provider.profile_photo %}{{ provider.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" 
+                                     style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid #e74c3c;">
+                                <h3 style="margin: 5px 0; font-size: 16px; color: #333;">{{ provider.full_name }}</h3>
+                                <p><strong style="color: #e74c3c;">{{ provider.city }}</strong></p>
+                                <p style="font-size: 12px; margin: 5px 0; color: #555;">{{ provider.address }}</p>
+                                <div style="margin: 10px 0; font-size: 12px; color: #555; border-top: 1px solid #eee; padding-top: 8px;">
+                                    <strong>Services:</strong> {{ provider.service_types }}
+                                </div>
+                                <a href="{% url 'provider_details' pk=provider.pk username=username %}" 
+                                   style="display: block; background: #e74c3c; color: white; text-decoration: none; padding: 8px; 
+                                          border-radius: 5px; margin-top: 5px; font-weight: bold;">
+                                    View Profile
+                                </a>
+                            </div>
+                        `;
+                        
+                        // Add popup to marker
+                        marker.bindPopup(popupContent);
+                    } else {
+                        console.error("Invalid coordinates for:", "{{ provider.full_name }}", lat, lng);
+                    }
+                {% else %}
+                    // Fallback for providers without coordinates
+                    console.warn("No coordinates for provider:", "{{ provider.full_name }}");
+                {% endif %}
+            })();
+        {% endfor %}
+        
+        // Fit map to show all markers after small delay to ensure they're all loaded
+        setTimeout(function() {
+            if (allMarkers.length > 0) {
+                console.log("Fitting map to", allMarkers.length, "markers");
+                const group = L.featureGroup(allMarkers);
+                providersMap.fitBounds(group.getBounds().pad(0.2));
+            } else {
+                console.warn("No markers to display on map");
+            }
+        }, 500);
+
+        function openChat() {
+            // Get the currently selected service provider
+            const providerId = document.querySelector('.provider-card.selected')?.dataset.providerId;
+            
+            if (!providerId) {
+                alert('Please select a service provider to chat with.');
+                return;
+            }
+            
+            // Load chat interface for the selected provider
+            fetch(`{% url 'load_chat' %}?provider_id=${providerId}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chatContainerWrapper').innerHTML = html;
+                    
+                    // Initialize chat system
+                    window.chatSystem = new ChatSystem({
+                        currentUserId: '{{ request.user.id }}',
+                        currentUserRole: 'customer',
+                        currentUserPic: '{{ customer_details.profile_photo.url|default:"/static/default.png" }}',
+                        receiverId: providerId,
+                        receiverRole: 'service_provider',
+                        receiverPic: document.querySelector(`.provider-card[data-provider-id="${providerId}"] .card-avatar img`)?.src,
+                        receiverName: document.querySelector(`.provider-card[data-provider-id="${providerId}"] .provider-name`)?.textContent,
+                        chatUrl: `/ws/chat/${providerId}/`
+                    });
+                    
+                    // Show chat container
+                    document.getElementById('chatContainer').style.display = 'flex';
+                    document.getElementById('chatToggle').style.display = 'none';
+                });
+        }
+        
+        // Add click event to provider cards to select them
+        document.querySelectorAll('.provider-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                // If clicked on the view details button, don't select the card
+                if (e.target.closest('.view-details-btn')) return;
+                
+                // Remove selected class from all cards
+                document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked card
+                card.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

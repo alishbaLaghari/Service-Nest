@@ -1,0 +1,885 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Service Requests | ServiceNest</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #f5f6fa;
+            --accent-color: #ff6b6b;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --purple-color: #9b59b6;
+            --dark-color: #2d3436;
+            --light-color: #fff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #4a90e2, #357abd);
+            --gradient-accent: linear-gradient(135deg, #6a11cb, #2575fc);
+            --card-radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--dark-color);
+            line-height: 1.6;
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 60px; /* Space for footer */
+        }
+        
+        /* Decorative elements */
+        .bg-shape {
+            position: fixed;
+            z-index: -1;
+            opacity: 0.05;
+            filter: blur(40px);
+        }
+        
+        .shape-1 {
+            top: 5%;
+            left: 5%;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: var(--gradient-accent);
+        }
+        
+        .shape-2 {
+            bottom: 5%;
+            right: 5%;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+        }
+
+        .header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .back-btn {
+            color: white;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .status-summary {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 15px var(--shadow-color);
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .status-card {
+            flex: 1;
+            min-width: 150px;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+        }
+        
+        .status-pending::before {
+            background: var(--warning-color);
+        }
+        
+        .status-accepted::before {
+            background: var(--success-color);
+        }
+        
+        .status-completed::before {
+            background: var(--purple-color);
+        }
+        
+        .status-cancelled::before {
+            background: var(--danger-color);
+        }
+        
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .status-pending .status-icon {
+            color: var(--warning-color);
+        }
+        
+        .status-accepted .status-icon {
+            color: var(--success-color);
+        }
+        
+        .status-completed .status-icon {
+            color: var(--purple-color);
+        }
+        
+        .status-cancelled .status-icon {
+            color: var(--danger-color);
+        }
+        
+        .status-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .status-label {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 5px;
+        }
+
+        .requests-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--primary-color);
+        }
+        
+        .filter-dropdown {
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            font-size: 0.9rem;
+            color: var(--dark-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .filter-dropdown:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .request-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .request-card {
+            background: white;
+            border-radius: var(--card-radius);
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            transition: var(--transition);
+            border-left: 5px solid transparent;
+            position: relative;
+        }
+        
+        .request-pending {
+            border-left-color: var(--warning-color);
+        }
+        
+        .request-accepted {
+            border-left-color: var(--success-color);
+        }
+        
+        .request-completed {
+            border-left-color: var(--purple-color);
+        }
+        
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+        }
+        
+        .request-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fcfcfc;
+        }
+        
+        .request-id {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        
+        .request-date {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        
+        .request-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--warning-color);
+        }
+        
+        .status-accepted {
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success-color);
+        }
+        
+        .status-completed {
+            background: rgba(155, 89, 182, 0.15);
+            color: var(--purple-color);
+        }
+        
+        .request-content {
+            padding: 20px;
+        }
+        
+        .provider-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .provider-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .provider-details {
+            flex: 1;
+        }
+        
+        .provider-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+        
+        .provider-meta {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .provider-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        
+        .provider-meta-item i {
+            color: var(--primary-color);
+        }
+        
+        .service-details {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #eee;
+        }
+        
+        .service-type {
+            display: inline-block;
+            background: var(--secondary-color);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .request-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .request-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .cancel-btn {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+        
+        .cancel-btn:hover {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .complete-btn {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+        
+        .complete-btn:hover {
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .feedback-btn {
+            background: rgba(155, 89, 182, 0.1);
+            color: var(--purple-color);
+        }
+        
+        .feedback-btn:hover {
+            background: var(--purple-color);
+            color: white;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            background: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 15px var(--shadow-color);
+            padding: 40px 20px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            color: #d1d8e0;
+            margin-bottom: 20px;
+        }
+        
+        .empty-text {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .browse-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+        
+        .browse-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+        
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background: var(--dark-color);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Modal styles for feedback */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: var(--card-radius);
+            width: 90%;
+            max-width: 500px;
+            overflow: hidden;
+            animation: modalSlideIn 0.3s;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .feedback-form textarea {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 15px;
+            font-family: inherit;
+        }
+        
+        .feedback-form textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            text-align: right;
+        }
+        
+        .submit-btn {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .submit-btn:hover {
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .request-cards {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Decorative background shapes -->
+    <div class="bg-shape shape-1"></div>
+    <div class="bg-shape shape-2"></div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fas fa-clipboard-list"></i>
+                Your Service Requests
+            </h1>
+            <a href="javascript:history.back()" class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+                Back
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Status summary cards -->
+        <div class="status-summary">
+            <div class="status-card status-pending">
+                <div class="status-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="status-count">{{ requests|filter_status:'pending'|length }}</div>
+                <div class="status-label">Pending</div>
+            </div>
+            
+            <div class="status-card status-accepted">
+                <div class="status-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="status-count">{{ requests|filter_status:'accepted'|length }}</div>
+                <div class="status-label">Accepted</div>
+            </div>
+            
+            <div class="status-card status-completed">
+                <div class="status-icon">
+                    <i class="fas fa-clipboard-check"></i>
+                </div>
+                <div class="status-count">{{ requests|filter_status:'completed'|length }}</div>
+                <div class="status-label">Completed</div>
+            </div>
+            
+            <div class="status-card status-cancelled">
+                <div class="status-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="status-count">{{ requests|filter_status:'cancelled'|length }}</div>
+                <div class="status-label">Cancelled</div>
+            </div>
+        </div>
+
+        <!-- Main request section -->
+        <div class="requests-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-th-list"></i>
+                    Your Requests
+                </h2>
+                <select class="filter-dropdown" id="statusFilter">
+                    <option value="all">All Requests</option>
+                    <option value="pending">Pending</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="completed">Completed</option>
+                </select>
+            </div>
+
+            {% if requests %}
+            <div class="request-cards">
+                {% for request in requests %}
+                <div class="request-card {% if request.completed %}request-completed{% elif request.accept %}request-accepted{% else %}request-pending{% endif %}" data-status="{% if request.completed %}completed{% elif request.accept %}accepted{% else %}pending{% endif %}">
+                    <div class="request-header">
+                        <div class="request-id">Request #{{ request.id }}</div>
+                        <div class="request-date">{{ request.created_at|date:"M d, Y" }}</div>
+                        <div class="request-status {% if request.completed %}status-completed{% elif request.accept %}status-accepted{% else %}status-pending{% endif %}">
+                            {% if request.completed %}
+                                Completed
+                            {% elif request.accept %}
+                                Accepted
+                            {% else %}
+                                Pending
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="request-content">
+                        <div class="provider-info">
+                            <img src="{% if request.service_provider_details.profile_photo %}{{ request.service_provider_details.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" alt="{{ request.service_provider_details.full_name }}" class="provider-avatar">
+                            <div class="provider-details">
+                                <div class="provider-name">{{ request.service_provider_details.full_name }}</div>
+                                <div class="provider-meta">
+                                    <div class="provider-meta-item">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ request.service_provider_details.city }}</span>
+                                    </div>
+                                    <div class="provider-meta-item">
+                                        <i class="fas fa-phone"></i>
+                                        <span>{{ request.service_provider_details.phone }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-details">
+                            <div class="service-type">{{ request.service_provider_details.service_types|truncatewords:1 }}</div>
+                            <div class="service-description">
+                                {% if request.service_provider_details.description %}
+                                    {{ request.service_provider_details.description|truncatechars:120 }}
+                                {% else %}
+                                    Professional service provider offering quality services.
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            {% if not request.completed and not request.accept %}
+                            <form method="POST" action="{% url 'cancel_request' pk=request.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="request-btn cancel-btn">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </form>
+                            {% elif request.accept and not request.completed %}
+                            <form method="POST" action="{% url 'complete_request' req_id=request.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="request-btn complete-btn">
+                                    <i class="fas fa-check"></i> Mark Complete
+                                </button>
+                            </form>
+                            {% endif %}
+                            
+                            {% if request.completed %}
+                            <button class="request-btn feedback-btn" onclick="openFeedbackModal({{ request.id }}, {{ customer.id }}, {{ request.service_provider_details.id }})">
+                                <i class="fas fa-comment"></i> Leave Feedback
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clipboard"></i>
+                </div>
+                <div class="empty-text">You don't have any service requests yet</div>
+                <a href="{% url 'customer_login_success' username=customer.customerlogin.username %}" class="browse-btn">
+                    <i class="fas fa-search"></i> Browse Service Providers
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Leave Your Feedback</h2>
+                <button class="modal-close" onclick="closeFeedbackModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="feedback-form">
+                    <textarea id="feedbackText" placeholder="Share your experience with this service..."></textarea>
+                    <input type="hidden" id="requestId" value="">
+                    <input type="hidden" id="customerId" value="">
+                    <input type="hidden" id="serviceProviderId" value="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="submit-btn" onclick="submitFeedback()">Submit Feedback</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; 2023 ServiceNest - Connect with trusted service providers
+    </footer>
+
+    <script>
+        // Filter functionality
+        const statusFilter = document.getElementById('statusFilter');
+        const requestCards = document.querySelectorAll('.request-card');
+        
+        statusFilter.addEventListener('change', function() {
+            const status = this.value;
+            
+            requestCards.forEach(card => {
+                const cardStatus = card.getAttribute('data-status');
+                
+                if (status === 'all' || status === cardStatus) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Feedback modal functions
+        function openFeedbackModal(requestId, customerId, serviceProviderId) {
+            document.getElementById('feedbackModal').style.display = 'flex';
+            document.getElementById('requestId').value = requestId;
+            document.getElementById('customerId').value = customerId;
+            document.getElementById('serviceProviderId').value = serviceProviderId;
+        }
+        
+        function closeFeedbackModal() {
+            document.getElementById('feedbackModal').style.display = 'none';
+        }
+        
+        function submitFeedback() {
+            const feedback = document.getElementById('feedbackText').value;
+            const requestId = document.getElementById('requestId').value;
+            const customerId = document.getElementById('customerId').value;
+            const serviceProviderId = document.getElementById('serviceProviderId').value;
+            
+            if (!feedback.trim()) {
+                alert('Please enter your feedback');
+                return;
+            }
+            
+            // Create the form data
+            const formData = new FormData();
+            formData.append('feedback', feedback);
+            formData.append('request_id', requestId);
+            formData.append('customer_id', customerId);
+            formData.append('service_provider_id', serviceProviderId);
+            
+            // Send the AJAX request
+            fetch('{% url "submit_feedback" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Feedback submitted successfully');
+                    closeFeedbackModal();
+                    // Optionally reload the page to reflect changes
+                    location.reload();
+                } else {
+                    alert('Failed to submit feedback');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting feedback');
+            });
+        }
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('feedbackModal');
+            if (event.target === modal) {
+                closeFeedbackModal();
+            }
+        });
+    </script>
+</body>
+</html>

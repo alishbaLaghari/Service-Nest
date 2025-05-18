@@ -1,0 +1,50 @@
+{% load static %}
+
+<div class="chat-container" id="chatContainer">
+    <div class="chat-header">
+        <div class="chat-header-user">
+            <img src="{{ receiver_profile_pic|default:'default_profile.jpg' }}" alt="{{ receiver_name }}" class="chat-header-avatar" id="receiverProfilePic">
+            <div class="chat-header-info">
+                <h4 id="receiverName">{{ receiver_name }}</h4>
+                <p id="receiverStatus">Online</p>
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button class="chat-close-btn" onclick="toggleChat()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+        <!-- Messages will be populated here dynamically -->
+    </div>
+    
+    <div class="chat-input-container">
+        <textarea id="chatInput" placeholder="Type a message..." class="chat-input"></textarea>
+        <button id="sendButton" class="chat-send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Template for sent message -->
+<template id="sentMessageTemplate">
+    <div class="chat-message sent">
+        <div class="message-content">
+            <p class="message-text"></p>
+            <span class="message-time"></span>
+        </div>
+    </div>
+</template>
+
+<!-- Template for received message -->
+<template id="receivedMessageTemplate">
+    <div class="chat-message received">
+        <img src="" alt="Profile" class="message-avatar">
+        <div class="message-content">
+            <p class="message-text"></p>
+            <span class="message-time"></span>
+        </div>
+    </div>
+</template>
