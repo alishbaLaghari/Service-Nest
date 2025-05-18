@@ -1,0 +1,601 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Providers | ServiceNest</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --primary-light: rgba(74, 144, 226, 0.1);
+            --secondary-color: #f5f6fa;
+            --accent-color: #6a11cb;
+            --accent-light: rgba(106, 17, 203, 0.1);
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --dark-color: #2d3436;
+            --text-color: #495057;
+            --text-light: #a0a0a0;
+            --border-radius: 15px;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f6f8fb, #e9edf2);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 30px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            padding: 25px;
+            border-radius: var(--border-radius);
+            color: white;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h1 i {
+            font-size: 1.8rem;
+            background: rgba(255, 255, 255, 0.2);
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .add-provider {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+            text-decoration: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .add-provider:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 18px 20px 18px 55px;
+            border: none;
+            border-radius: var(--border-radius);
+            background: white;
+            box-shadow: var(--card-shadow);
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .provider-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .provider-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            height: 110px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            position: relative;
+        }
+
+        .profile-img-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -50px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.5s;
+        }
+
+        .provider-card:hover .profile-img {
+            transform: scale(1.1);
+        }
+
+        .card-body {
+            padding: 60px 20px 20px;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .provider-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .provider-email {
+            color: var(--text-light);
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        .detail-section {
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .provider-detail {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+        }
+
+        .provider-detail i {
+            color: var(--primary-color);
+            font-size: 1rem;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .services {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .service-tag {
+            background: var(--primary-light);
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: var(--primary-color);
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .service-tag:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            border-top: 1px solid #eee;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 15px 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: var(--transition);
+            color: var(--text-color);
+            text-decoration: none;
+        }
+
+        .action-btn.edit {
+            color: var(--primary-color);
+        }
+
+        .action-btn.delete {
+            color: var(--danger-color);
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .action-btn.edit:hover {
+            color: var(--primary-color);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--danger-color);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--border-radius);
+            max-width: 700px;
+            width: 90%;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: slideUp 0.4s;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-img {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 50px 0;
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .empty-text {
+            color: var(--text-light);
+            margin-bottom: 25px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+                padding: 20px 15px;
+            }
+
+            .header h1 {
+                justify-content: center;
+            }
+            
+            .card-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+
+            .add-provider {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tools"></i> Service Providers</h1>
+            <a href="{% url 'add_service_provider' %}" class="add-provider">
+                <i class="fas fa-plus"></i> Add Provider
+            </a>
+        </div>
+
+        <div class="search-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-box" id="searchInput" placeholder="Search for providers by name, email, service...">
+        </div>
+
+        <div class="card-grid" id="providerGrid">
+            {% for provider, provider_login in service_provider_signup_details|zip:service_provider_login_details %}
+            <div class="provider-card">
+                <div class="card-header">
+                    <div class="profile-img-container">
+                        <img src="{% if provider.profile_photo %}{{ provider.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}" 
+                             alt="{{ provider.full_name }}" 
+                             class="profile-img"
+                             onclick="openModal('{% if provider.profile_photo %}{{ provider.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}')">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h3 class="provider-name">{{ provider.full_name }}</h3>
+                    <p class="provider-email">{{ provider.email }}</p>
+                    
+                    <div class="detail-section">
+                        <div class="provider-detail">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ provider.city }}</span>
+                        </div>
+                        <div class="provider-detail">
+                            <i class="fas fa-phone"></i>
+                            <span>{{ provider.phone }}</span>
+                        </div>
+                        <div class="provider-detail">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>{{ provider.days_available }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="services">
+                        {% for service in provider.service_types|split:',' %}
+                            <span class="service-tag">{{ service|strip }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'edit_service_provider' provider.id %}" class="action-btn edit">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{% url 'delete_service_provider' provider.id %}" class="action-btn delete">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <div class="empty-icon">
+                    <i class="fas fa-user-slash"></i>
+                </div>
+                <h3 class="empty-title">No service providers found</h3>
+                <p class="empty-text">Add your first service provider to get started</p>
+                <a href="{% url 'add_service_provider' %}" class="add-provider">
+                    <i class="fas fa-plus"></i> Add Provider
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if service_provider_signup_details.has_other_pages %}
+        <div class="pagination">
+            {% if service_provider_signup_details.has_previous %}
+                <a class="page-link" href="?page={{ service_provider_signup_details.previous_page_number }}"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            
+            {% for i in service_provider_signup_details.paginator.page_range %}
+                {% if service_provider_signup_details.number == i %}
+                    <span class="page-link active">{{ i }}</span>
+                {% else %}
+                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                {% endif %}
+            {% endfor %}
+            
+            {% if service_provider_signup_details.has_next %}
+                <a class="page-link" href="?page={{ service_provider_signup_details.next_page_number }}"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Modal for displaying profile photo -->
+    <div id="photoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Profile Photo</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="modalImg" src="" alt="Profile Photo" class="modal-img">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.provider-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.provider-name').textContent.toLowerCase();
+                const email = card.querySelector('.provider-email').textContent.toLowerCase();
+                const city = card.querySelector('.provider-detail span').textContent.toLowerCase();
+                const services = card.querySelector('.services').textContent.toLowerCase();
+                
+                if (name.includes(searchValue) || email.includes(searchValue) || 
+                    city.includes(searchValue) || services.includes(searchValue)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+        
+        // Modal functions
+        function openModal(imageSrc) {
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalImg');
+            modal.style.display = 'flex';
+            modalImg.src = imageSrc;
+        }
+        
+        function closeModal() {
+            document.getElementById('photoModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('photoModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

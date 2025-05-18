@@ -1,0 +1,932 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | ServiceNest</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+        :root {
+            --primary-color: #5e60ce;
+            --primary-light: rgba(94, 96, 206, 0.1);
+            --secondary-color: #64dfdf;
+            --accent-color: #6930c3;
+            --success-color: #48cae4;
+            --warning-color: #fb8500;
+            --danger-color: #ef476f;
+            --dark-color: #212529;
+            --light-color: #f8f9fa;
+            --text-color: #495057;
+            --border-radius: 12px;
+            --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            line-height: 1.6;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #5e60ce 0%, #6930c3 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            overflow-y: auto;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .sidebar-collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo i {
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            transition: var(--transition);
+        }
+
+        .sidebar-collapsed .logo-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(180deg);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 15px;
+        }
+
+        .menu-item {
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .menu-item a {
+            display: flex;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            padding: 12px 15px;
+            border-radius: 10px;
+            transition: var(--transition);
+            align-items: center;
+        }
+
+        .menu-item.active a,
+        .menu-item a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .menu-item i {
+            margin-right: 15px;
+            font-size: 18px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .menu-item .menu-text {
+            transition: var(--transition);
+        }
+
+        .sidebar-collapsed .menu-text {
+            opacity: 0;
+            width: 0;
+            display: none;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            font-size: 16px;
+        }
+
+        .admin-info {
+            transition: var(--transition);
+        }
+
+        .sidebar-collapsed .admin-info {
+            opacity: 0;
+            width: 0;
+            display: none;
+        }
+
+        .admin-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .admin-role {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            padding: 30px;
+            margin-left: 280px;
+            transition: var(--transition);
+        }
+
+        .main-collapsed {
+            margin-left: 80px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-color);
+        }
+
+        .date-display {
+            color: var(--text-color);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
+            transform: skewX(-20deg) translateX(180px);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover::before {
+            transform: skewX(-20deg) translateX(75px);
+        }
+
+        .stat-icon {
+            font-size: 32px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .customers .stat-icon {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+        }
+
+        .providers .stat-icon {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        }
+
+        .feedback .stat-icon {
+            background: linear-gradient(135deg, #48cae4, #90e0ef);
+        }
+
+        .messages .stat-icon {
+            background: linear-gradient(135deg, #ff6b6b, #ffa8a8);
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--dark-color);
+        }
+
+        .stat-label {
+            color: var(--text-color);
+            font-size: 15px;
+            opacity: 0.8;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-action {
+            background: var(--primary-light);
+            border: none;
+            color: var(--primary-color);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .chart-action:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .chart-content {
+            height: 300px;
+        }
+
+        .recent-activity {
+            margin-bottom: 30px;
+        }
+
+        .activity-card {
+            background: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .activity-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .view-all {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .view-all:hover {
+            color: var(--accent-color);
+            text-decoration: underline;
+        }
+
+        .activity-list {
+            list-style-type: none;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f2f5;
+            transition: var(--transition);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-item:hover {
+            background: rgba(0, 0, 0, 0.01);
+            transform: translateX(5px);
+        }
+
+        .activity-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            margin-bottom: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .activity-user {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .activity-action {
+            color: var(--text-color);
+        }
+
+        .activity-time {
+            font-size: 13px;
+            color: #adb5bd;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-icon {
+            font-size: 28px;
+            margin-bottom: 15px;
+            display: inline-flex;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            background: linear-gradient(135deg, #5e60ce, #6930c3);
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+        }
+
+        .action-desc {
+            font-size: 14px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        /* Customization for donut chart */
+        .distribution-chart {
+            height: 300px;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 80px;
+            }
+            
+            .logo-text,
+            .menu-text,
+            .admin-info {
+                display: none;
+            }
+            
+            .main {
+                margin-left: 80px;
+            }
+            
+            .stats-grid,
+            .charts-row,
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Shimmer effect loader */
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        .shimmer {
+            animation: shimmer 2s infinite linear;
+            background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background-size: 1000px 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <i class="fas fa-tools"></i>
+                <span class="logo-text">ServiceNest</span>
+            </a>
+            <button class="toggle-btn" id="toggleSidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item active">
+                <a href="#">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span class="menu-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'all_customer_data' %}">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Customers</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'all_service_provider_data' %}">
+                    <i class="fas fa-user-tie"></i>
+                    <span class="menu-text">Providers</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'all_feedbacks' %}">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="menu-text">Feedback</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="{% url 'view_messages' %}">
+                    <i class="fas fa-envelope"></i>
+                    <span class="menu-text">Messages</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-text">Settings</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="admin-avatar">A</div>
+            <div class="admin-info">
+                <div class="admin-name">Admin</div>
+                <div class="admin-role">System Administrator</div>
+            </div>
+        </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main" id="main">
+        <div class="header">
+            <h1 class="page-title">Dashboard</h1>
+            <div class="date-display">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="currentDate">Loading date...</span>
+            </div>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card customers">
+                <div class="stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ customer_count }}</div>
+                    <div class="stat-label">Customers</div>
+                </div>
+            </div>
+            
+            <div class="stat-card providers">
+                <div class="stat-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ provider_count }}</div>
+                    <div class="stat-label">Service Providers</div>
+                </div>
+            </div>
+            
+            <div class="stat-card feedback">
+                <div class="stat-icon">
+                    <i class="fas fa-comment-dots"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ feedback_count }}</div>
+                    <div class="stat-label">Reviews</div>
+                </div>
+            </div>
+            
+            <div class="stat-card messages">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-value">{{ message_count }}</div>
+                    <div class="stat-label">Messages</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Section -->
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">Registration Trend</h3>
+                    <div class="chart-actions">
+                        <button class="chart-action">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="chart-action">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-content">
+                    <div id="registrationTrend"></div>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">User Distribution</h3>
+                    <div class="chart-actions">
+                        <button class="chart-action">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chart-content">
+                    <div id="distributionChart" class="distribution-chart"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity and Quick Actions -->
+        <div class="charts-row">
+            <div class="activity-card">
+                <div class="activity-header">
+                    <h3 class="activity-title">Recent Activity</h3>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <ul class="activity-list">
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-user">New customer</span>
+                                <span class="activity-action">registered</span>
+                            </div>
+                            <div class="activity-time">2 minutes ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-comment"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-user">New feedback</span>
+                                <span class="activity-action">received</span>
+                            </div>
+                            <div class="activity-time">1 hour ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-user">New service provider</span>
+                                <span class="activity-action">joined</span>
+                            </div>
+                            <div class="activity-time">3 hours ago</div>
+                        </div>
+                    </li>
+                    <li class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <span class="activity-user">New message</span>
+                                <span class="activity-action">received</span>
+                            </div>
+                            <div class="activity-time">5 hours ago</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="chart-card">
+                <div class="activity-header">
+                    <h3 class="activity-title">Quick Actions</h3>
+                </div>
+                <div class="quick-actions">
+                    <a href="{% url 'add_customer' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h4 class="action-title">Add Customer</h4>
+                    </a>
+                    <a href="{% url 'add_service_provider' %}" class="action-card">
+                        <div class="action-icon">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <h4 class="action-title">Add Provider</h4>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script>
+        // Current Date display
+        const date = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').textContent = date.toLocaleDateString('en-US', options);
+        
+        // Sidebar toggle
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        
+        toggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar-collapsed');
+            main.classList.toggle('main-collapsed');
+        });
+        
+        // Registration Trend Chart
+        const registrationOptions = {
+            series: [{
+                name: 'Customers',
+                data: [30, 40, 35, 50, 49, 60, 70, 91, 125]
+            }, {
+                name: 'Service Providers',
+                data: [15, 20, 25, 30, 35, 40, 45, 50, 55]
+            }],
+            chart: {
+                height: 300,
+                type: 'area',
+                fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+                toolbar: {
+                    show: false
+                }
+            },
+            colors: ['#6a11cb', '#ff9a9e'],
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 2
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.3,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                labels: {
+                    style: {
+                        colors: '#868e96',
+                        fontSize: '12px',
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#868e96',
+                        fontSize: '12px',
+                    }
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd/MM/yy HH:mm'
+                },
+            },
+            legend: {
+                position: 'top',
+                horizontalAlign: 'left',
+                offsetX: 40
+            }
+        };
+
+        const registrationChart = new ApexCharts(document.querySelector("#registrationTrend"), registrationOptions);
+        registrationChart.render();
+        
+        // User Distribution Chart
+        const distributionOptions = {
+            series: [{{ customer_count }}, {{ provider_count }}],
+            chart: {
+                width: '100%',
+                type: 'donut',
+                fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            },
+            colors: ['#6a11cb', '#ff9a9e'],
+            labels: ['Customers', 'Service Providers'],
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '55%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: 'Total Users',
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: true
+            },
+            legend: {
+                position: 'bottom',
+                fontFamily: 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif',
+            },
+            responsive: [{
+                breakpoint: 480,
+                options: {
+                    chart: {
+                        width: 200
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }]
+        };
+
+        const distributionChart = new ApexCharts(document.querySelector("#distributionChart"), distributionOptions);
+        distributionChart.render();
+    </script>
+</body>
+</html>

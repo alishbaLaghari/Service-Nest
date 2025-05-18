@@ -1,0 +1,308 @@
+{% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Customers & Feedback | ServiceNest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --accent: #00bcd4;
+            --danger: #e74c3c;
+            --bg-gradient: linear-gradient(120deg, #e0f7fa 0%, #b2ebf2 100%);
+            --table-head: linear-gradient(135deg, #004d40, #00796b);
+            --table-row: #f9f9f9;
+            --table-row-alt: #e0f2f1;
+            --shadow: 0 8px 24px rgba(0,0,0,0.10);
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(.4,2,.3,1);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            color: #222;
+            margin: 0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto 0;
+            padding: 0 20px 40px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--primary-dark);
+            font-size: 2.7em;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .fancy-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-top: 20px;
+            animation: fadeIn 0.7s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        th, td {
+            padding: 18px 16px;
+            text-align: left;
+        }
+        th {
+            background: var(--table-head);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.05em;
+            letter-spacing: 0.07em;
+            border: none;
+        }
+        tr {
+            transition: var(--transition);
+        }
+        tbody tr {
+            background: var(--table-row);
+        }
+        tbody tr:nth-child(even) {
+            background: var(--table-row-alt);
+        }
+        tbody tr:hover {
+            background: #b2ebf2;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            transform: scale(1.01);
+        }
+        .profile-photo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            border: 3px solid var(--primary);
+            background: #fff;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .profile-photo:hover {
+            transform: scale(1.08) rotate(-2deg);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        }
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .feedbacks {
+            margin-top: 5px;
+        }
+        .feedback {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+        .feedback:hover {
+            background: #e0f2f1;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.13);
+        }
+        .feedback-content {
+            flex: 1;
+            color: #004d40;
+            font-size: 1em;
+        }
+        .delete-button {
+            background: var(--danger);
+            border: none;
+            color: #fff;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(231,76,60,0.08);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .delete-button:hover {
+            background: #c0392b;
+            transform: scale(1.07);
+        }
+        .actions {
+            text-align: center;
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.45);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 30px 20px 20px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            text-align: center;
+            animation: fadeIn 0.4s;
+        }
+        .modal-content img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .close {
+            color: var(--danger);
+            position: absolute;
+            top: 12px;
+            right: 22px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .close:hover {
+            color: #fff;
+            background: var(--danger);
+            border-radius: 50%;
+            padding: 0 8px;
+        }
+        /* Responsive */
+        @media (max-width: 900px) {
+            .container { padding: 0 5px 40px; }
+            th, td { padding: 12px 8px; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 0 2px 30px; }
+            h1 { font-size: 1.5em; }
+            .fancy-table { font-size: 0.95em; }
+            .profile-photo { width: 50px; height: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <i class="fas fa-users" style="color:var(--primary);margin-right:10px;"></i>
+            All Customers & Feedback
+        </h1>
+        <table class="fancy-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>City</th>
+                    <th>Profile Photo</th>
+                    <th>Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customer_signup_details %}
+                <tr>
+                    <td>{{ customer.id }}</td>
+                    <td><strong>{{ customer.full_name }}</strong></td>
+                    <td>{{ customer.city }}</td>
+                    <td>
+                        <div class="profile-photo" onclick="openModal('{% if customer.profile_photo %}{{ customer.profile_photo.url }}{% else %}{% static 'default.png' %}{% endif %}')">
+                            {% if customer.profile_photo %}
+                                <img src="{{ customer.profile_photo.url }}" alt="Profile Photo">
+                            {% else %}
+                                <img src="{% static 'default.png' %}" alt="Default Profile Photo">
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="feedbacks">
+                            {% for feedback in feedbacks %}
+                                {% if feedback.customer_details.id == customer.id %}
+                                    <div class="feedback">
+                                        <div class="feedback-content">
+                                            <i class="fas fa-comment-dots" style="color:var(--primary);margin-right:6px;"></i>
+                                            <span>{{ feedback.feedback }}</span>
+                                        </div>
+                                        <form method="POST" action="{% url 'delete_feedback' feedback.id %}" style="margin-left: 10px;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="delete-button">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #004d40; padding: 30px;">
+                        <i class="fas fa-users-slash" style="font-size:2em; color:var(--primary);"></i>
+                        <br>No customers found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img id="modal-image" src="" alt="Profile Photo">
+        </div>
+    </div>
+    <script>
+        function openModal(imageSrc) {
+            var modal = document.getElementById("myModal");
+            var modalImg = document.getElementById("modal-image");
+            modal.style.display = "flex";
+            modalImg.src = imageSrc;
+        }
+        function closeModal() {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "none";
+        }
+        // Close modal on outside click
+        window.onclick = function(event) {
+            var modal = document.getElementById("myModal");
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

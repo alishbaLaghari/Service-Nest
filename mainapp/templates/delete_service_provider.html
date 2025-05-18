@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Service Provider</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .confirmation {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f9f9f9;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .confirmation h2 {
+            margin-bottom: 20px;
+        }
+        .confirmation p {
+            margin-bottom: 20px;
+        }
+        .confirmation button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .confirmation button:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div class="confirmation">
+        <h2>Delete Service Provider</h2>
+        <p>Are you sure you want to delete service provider "{{ provider.name }}"?</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Delete</button>
+            <a href="{% url 'all_service_provider_data' %}">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>
